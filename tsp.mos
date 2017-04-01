@@ -1,77 +1,120 @@
-(!*******************************************************
-  * Assignment 3                                        *
-  * ======================                              *
-  *                                                     *
-  * file tsp.mos                                        *
-  * ````````````````````                                *
-  * Find the shortest path between the capital          *
-  * town/city of each of the counties in Ireland and    *
-  * Northern Ireland.                                   *
-  *                                                     *
-  * Authors: Robert Creagh, Max Buckley                 *
-  * Student Numbers: 15200115, 15203431                 *
-  *                                                     *
-  * Code taken from tsp.mos, authored by P. Carroll     *
-  *******************************************************!)
-model tsp
-  uses "mmxprs"                   ! Gain access to the Xpress-Optimizer solver
+model "Tour planning"
+ uses "mmxprs"
 
-declarations
-  CAPITALS: set of string ! Set of nodes
-  EDGE: array(ARCSET:range) of record ! Arcs:
-	  Source,Sink: string ! Source and sink of arc
-	  Distance: real ! Cost coefficient
-	  x: mpvar
-  end-record
-end-declarations
+ forward procedure break_subtour
+ forward procedure print_sol
 
-initializations from "tsp.txt"
-  EDGE(Source, Sink, Cost)
-end-initializations
+ declarations
+  NCITIES = 5
+  CITIES = 1..NCITIES                    ! Cities
+  
+  DIST: array(CITIES,CITIES) of integer  ! Distance between cities
+  NEXTC: array(CITIES) of integer        ! Next city after i in the solution
+ 
+  fly: array(CITIES,CITIES) of mpvar     ! 1 if flight from i to j 
+ end-declarations
 
-procedure print_status
-  declarations
-    status: string
-  end-declarations
-  case getprobstat of
-    XPRS_OPT: status:="Optimum found"
-    XPRS_UNF: status:="Unfinished"
-    XPRS_INF: status:="Infeasible"
-    XPRS_UNB: status:="Unbounded"
-    XPRS_OTH: status:="Failed"
-    else status:="???"
-  end-case
-  writeln("Problem status: ", status)
-end-procedure
+ initializations from 'tsp.dat'
+  DIST
+ end-initializations
 
-procedure display_results
-  ! Solution printing
-  writeln("Tour length: ", getobjval)
+ forall(i,j in CITIES | i<j) DIST(j,i):=DIST(i,j)
 
-  writeln("Edges used:")
-  forall(a in ARCSET)
-    if getsol(EDGE(a).x) > 0 then
-      writeln("Connect ", EDGE(a).Source," to ",EDGE(a).Sink, " Cost: ",EDGE(a).Cost, " x is : ", getsol(EDGE(a).x)  ) 
-    end-if
-  writeln
-end-procedure
+! Objective: total distance
+ TotalDist:= sum(i,j in CITIES | i<>j) DIST(i,j)*fly(i,j)
 
-! Determine the set of nodes
-NODES:=union(a in ARCSET) {EDGE(a).Source, EDGE(a).Sink}
-Numnodes:= getsize(NODES)
+! Visit every city once
+ forall(i in CITIES) OneVisitI(i):= sum(j in CITIES | i<>j) fly(i,j) = 1
+ forall(j in CITIES) OneVisitJ(j):= sum(i in CITIES | i<>j) fly(i,j) = 1
 
-! Objective Function: sum of costs of edges
-TSP:= sum(a in ARCSET ) EDGE(a).Cost*EDGE(a).x
-
-!Fractional edge constraints
-forall(a in ARCSET ) EDGE(a).x <= 1
-
-!Degree constraints: every node is 2-connected
-forall(i in NODES )
-	sum(a in ARCSET | i = EDGE(a).Source or i = EDGE(a).Sink  ) EDGE(a).x = 2
+ forall(i,j in CITIES | i<>j) fly(i,j) is_binary
 
 ! Solve the problem
-minimize(TSP)
-print_status
-display_results 
-exportprob(0,"tsp_1",TSP)
+ minimize(TotalDist)
+
+writeln(DIST)
+! Eliminate subtours
+ break_subtour
+
+!-----------------------------------------------------------------
+
+ procedure break_subtour
+  declarations
+   TOUR,SMALLEST,ALLCITIES: set of integer
+  end-declarations
+
+  forall(i in CITIES) 
+   NEXTC(i):= integer(round(getsol(sum(j in CITIES) j*fly(i,j) )))
+
+! Print the current solution  
+  print_sol
+  
+! Get (sub)tour containing city 1
+  TOUR:={}
+  first:=1
+  repeat
+   TOUR+={first}
+   first:=NEXTC(first)
+  until first=1
+  size:=getsize(TOUR)
+ 
+! Find smallest subtour
+  if size < NCITIES then
+   SMALLEST:=TOUR
+   if size>2 then
+    ALLCITIES:=TOUR 
+    forall(i in CITIES) do
+     if(i not in ALLCITIES) then
+      TOUR:={}
+      first:=i
+      repeat
+       TOUR+={first}
+       first:=NEXTC(first)
+      until first=i
+      ALLCITIES+=TOUR
+      if getsize(TOUR)<size then
+       SMALLEST:=TOUR
+       size:=getsize(SMALLEST)
+      end-if
+      if size=2 then
+       break
+      end-if 
+     end-if 
+    end-do        
+   end-if
+    
+! Add a subtour breaking constraint
+  sum(i in SMALLEST) fly(i,NEXTC(i)) <= getsize(SMALLEST) - 1
+  
+! Re-solve the problem
+   minimize(TotalDist)
+
+   break_subtour
+  end-if 
+ end-procedure
+ 
+!-----------------------------------------------------------------
+
+! Print the current solution
+ procedure print_sol
+  declarations
+   ALLCITIES: set of integer
+  end-declarations
+   
+  writeln("Total distance: ", getobjval)
+  ALLCITIES:={}
+  forall(i in CITIES) do
+   if(i not in ALLCITIES) then
+    write(i)
+    first:=i
+    repeat
+     ALLCITIES+={first}
+     write(" - ", NEXTC(first))
+     first:=NEXTC(first)
+    until first=i
+    writeln 
+   end-if
+  end-do        
+ end-procedure
+
+end-model
