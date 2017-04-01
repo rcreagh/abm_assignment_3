@@ -1,0 +1,77 @@
+(!*******************************************************
+  * Assignment 3                                        *
+  * ======================                              *
+  *                                                     *
+  * file tsp.mos                                        *
+  * ````````````````````                                *
+  * Find the shortest path between the capital          *
+  * town/city of each of the counties in Ireland and    *
+  * Northern Ireland.                                   *
+  *                                                     *
+  * Authors: Robert Creagh, Max Buckley                 *
+  * Student Numbers: 15200115, 15203431                 *
+  *                                                     *
+  * Code taken from tsp.mos, authored by P. Carroll     *
+  *******************************************************!)
+model tsp
+  uses "mmxprs"                   ! Gain access to the Xpress-Optimizer solver
+
+declarations
+  CAPITALS: set of string ! Set of nodes
+  EDGE: array(ARCSET:range) of record ! Arcs:
+	  Source,Sink: string ! Source and sink of arc
+	  Distance: real ! Cost coefficient
+	  x: mpvar
+  end-record
+end-declarations
+
+initializations from "tsp.txt"
+  EDGE(Source, Sink, Cost)
+end-initializations
+
+procedure print_status
+  declarations
+    status: string
+  end-declarations
+  case getprobstat of
+    XPRS_OPT: status:="Optimum found"
+    XPRS_UNF: status:="Unfinished"
+    XPRS_INF: status:="Infeasible"
+    XPRS_UNB: status:="Unbounded"
+    XPRS_OTH: status:="Failed"
+    else status:="???"
+  end-case
+  writeln("Problem status: ", status)
+end-procedure
+
+procedure display_results
+  ! Solution printing
+  writeln("Tour length: ", getobjval)
+
+  writeln("Edges used:")
+  forall(a in ARCSET)
+    if getsol(EDGE(a).x) > 0 then
+      writeln("Connect ", EDGE(a).Source," to ",EDGE(a).Sink, " Cost: ",EDGE(a).Cost, " x is : ", getsol(EDGE(a).x)  ) 
+    end-if
+  writeln
+end-procedure
+
+! Determine the set of nodes
+NODES:=union(a in ARCSET) {EDGE(a).Source, EDGE(a).Sink}
+Numnodes:= getsize(NODES)
+
+! Objective Function: sum of costs of edges
+TSP:= sum(a in ARCSET ) EDGE(a).Cost*EDGE(a).x
+
+!Fractional edge constraints
+forall(a in ARCSET ) EDGE(a).x <= 1
+
+!Degree constraints: every node is 2-connected
+forall(i in NODES )
+	sum(a in ARCSET | i = EDGE(a).Source or i = EDGE(a).Sink  ) EDGE(a).x = 2
+
+! Solve the problem
+minimize(TSP)
+print_status
+display_results 
+exportprob(0,"tsp_1",TSP)

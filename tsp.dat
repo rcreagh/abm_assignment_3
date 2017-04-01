@@ -1,0 +1,9 @@
+! Data file for `tsp'
+! data rigged to demonstrate violated sub-tour
+
+DIST :
+            [0 4 4 9 6
+             4 0 9 4 4
+             4 9 0 4 4
+             9 4 4 0 9
+             6 4 4 9 0] ;
