@@ -1,8 +1,8 @@
-! Data file for `tsp'
+! Data file for `tsp.mos'
 ! data rigged to demonstrate violated sub-tour
 
-NCOUNTIES: 5
-DIST :
+N_COUNTIES: 5
+DIST_MATRIX :
             [0 4 4 9 6
              4 0 9 4 4
              4 9 0 4 4
