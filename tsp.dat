@@ -1,6 +1,7 @@
 ! Data file for `tsp'
 ! data rigged to demonstrate violated sub-tour
 
+NCOUNTIES: 5
 DIST :
             [0 4 4 9 6
              4 0 9 4 4

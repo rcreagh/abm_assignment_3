@@ -1,3 +1,20 @@
+(!*******************************************************************
+  * Assignment 3                                                    *
+  * ======================                                          *
+  *                                                                 *
+  * file tsp.mos                                                    *
+  * ````````````````````                                            *
+  * Find the shortest TSP path between the capital town/county of     *
+  * each of the counties of Ireland and Northern Ireland.           *
+  *                                                                 *
+  * Authors: Robert Creagh, Max Buckley                             *
+  * Student Numbers: 15200115, 15203431                             *
+  *                                                                 *
+  * Code reused and edited from gamesworld.org, link:               *
+  * http://www.gamsworld.org/performance/xpresslib/raw/ive/tsp.mos  *
+  *								    * 
+  *******************************************************************!)
+
 model "Tour planning"
  uses "mmxprs"
 
@@ -5,29 +22,29 @@ model "Tour planning"
  forward procedure print_sol
 
  declarations
-  NCITIES = 5
-  CITIES = 1..NCITIES                    ! Cities
+  NCOUNTIES = 5
+  COUNTIES = 1..NCOUNTIES                    ! Counties
   
-  DIST: array(CITIES,CITIES) of integer  ! Distance between cities
-  NEXTC: array(CITIES) of integer        ! Next city after i in the solution
+  DIST: array(COUNTIES,COUNTIES) of integer  ! Distance between counties
+  NEXTC: array(COUNTIES) of integer        ! Next county after i in the solution
  
-  fly: array(CITIES,CITIES) of mpvar     ! 1 if flight from i to j 
+  fly: array(COUNTIES,COUNTIES) of mpvar     ! 1 if flight from i to j 
  end-declarations
 
  initializations from 'tsp.dat'
   DIST
  end-initializations
 
- forall(i,j in CITIES | i<j) DIST(j,i):=DIST(i,j)
+ forall(i,j in COUNTIES | i<j) DIST(j,i):=DIST(i,j)
 
 ! Objective: total distance
- TotalDist:= sum(i,j in CITIES | i<>j) DIST(i,j)*fly(i,j)
+ TotalDist:= sum(i,j in COUNTIES | i<>j) DIST(i,j)*fly(i,j)
 
-! Visit every city once
- forall(i in CITIES) OneVisitI(i):= sum(j in CITIES | i<>j) fly(i,j) = 1
- forall(j in CITIES) OneVisitJ(j):= sum(i in CITIES | i<>j) fly(i,j) = 1
+! Visit every county once
+ forall(i in COUNTIES) OneVisitI(i):= sum(j in COUNTIES | i<>j) fly(i,j) = 1
+ forall(j in COUNTIES) OneVisitJ(j):= sum(i in COUNTIES | i<>j) fly(i,j) = 1
 
- forall(i,j in CITIES | i<>j) fly(i,j) is_binary
+ forall(i,j in COUNTIES | i<>j) fly(i,j) is_binary
 
 ! Solve the problem
  minimize(TotalDist)
@@ -40,16 +57,16 @@ writeln(DIST)
 
  procedure break_subtour
   declarations
-   TOUR,SMALLEST,ALLCITIES: set of integer
+   TOUR,SMALLEST,ALLCOUNTIES: set of integer
   end-declarations
 
-  forall(i in CITIES) 
-   NEXTC(i):= integer(round(getsol(sum(j in CITIES) j*fly(i,j) )))
+  forall(i in COUNTIES) 
+   NEXTC(i):= integer(round(getsol(sum(j in COUNTIES) j*fly(i,j) )))
 
 ! Print the current solution  
   print_sol
   
-! Get (sub)tour containing city 1
+! Get (sub)tour containing county 1
   TOUR:={}
   first:=1
   repeat
@@ -59,19 +76,19 @@ writeln(DIST)
   size:=getsize(TOUR)
  
 ! Find smallest subtour
-  if size < NCITIES then
+  if size < NCOUNTIES then
    SMALLEST:=TOUR
    if size>2 then
-    ALLCITIES:=TOUR 
-    forall(i in CITIES) do
-     if(i not in ALLCITIES) then
+    ALLCOUNTIES:=TOUR 
+    forall(i in COUNTIES) do
+     if(i not in ALLCOUNTIES) then
       TOUR:={}
       first:=i
       repeat
        TOUR+={first}
        first:=NEXTC(first)
       until first=i
-      ALLCITIES+=TOUR
+      ALLCOUNTIES+=TOUR
       if getsize(TOUR)<size then
        SMALLEST:=TOUR
        size:=getsize(SMALLEST)
@@ -98,17 +115,17 @@ writeln(DIST)
 ! Print the current solution
  procedure print_sol
   declarations
-   ALLCITIES: set of integer
+   ALLCOUNTIES: set of integer
   end-declarations
    
   writeln("Total distance: ", getobjval)
-  ALLCITIES:={}
-  forall(i in CITIES) do
-   if(i not in ALLCITIES) then
+  ALLCOUNTIES:={}
+  forall(i in COUNTIES) do
+   if(i not in ALLCOUNTIES) then
     write(i)
     first:=i
     repeat
-     ALLCITIES+={first}
+     ALLCOUNTIES+={first}
      write(" - ", NEXTC(first))
      first:=NEXTC(first)
     until first=i
