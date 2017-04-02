@@ -2,9 +2,9 @@
 ! data rigged to demonstrate violated sub-tour
 
 N_COUNTIES: 5
-DIST_MATRIX :
+DIST_MATRIX:
             [0 4 4 9 6
              4 0 9 4 4
              4 9 0 4 4
              9 4 4 0 9
-             6 4 4 9 0] ;
+             6 4 4 9 0];
