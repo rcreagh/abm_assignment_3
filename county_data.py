@@ -2,6 +2,8 @@
 """Script for fetching the coordinates of the listed towns. From these
 coordinates the distance matrix can then be calculated."""
 
+import time
+import pickle
 import math
 from  urllib import request
 import json
@@ -58,16 +60,50 @@ URL_TOWN_TEMPLATE = (
 
 TownCoordinates = namedtuple('TownCoordinates', ['town', 'lat', 'lng'])
 
+COORDINATES_FILENAME = 'coordinates.pickle'
 
 def get_coordinate_data():
-  coordinates = []
-  for town in COUNTY_TOWNS:
-    response = request.urlopen(URL_TOWN_TEMPLATE % town)
-    data = json.loads(response.read().decode('utf-8'))
-    results = data.get('results')
-    coordinates.append(TownCoordinates(
-      town, **results[0].get('geometry').get('location')))
+  """Fetch the coordinate data.
+
+  Retrieves pickled data if available. If not queries Google Maps API. In the
+  latter case it also saves it as a pickle to prevent the need to query the API
+  in the future.
+  """
+  coordinates = load_coordinates()
+  if len(coordinates) == 0:
+    # We have no coordinates
+    for town in COUNTY_TOWNS:
+      response = request.urlopen(URL_TOWN_TEMPLATE % town)
+      data = json.loads(response.read().decode('utf-8'))
+      while data['status'] != 'OK':
+        # In case of throttling. API has a 50 query per second limit.
+        time.sleep(10)
+        response = request.urlopen(URL_TOWN_TEMPLATE % town)
+        data = json.loads(response.read().decode('utf-8'))
+      results = data.get('results')
+      coordinates.append(TownCoordinates(
+        town, **results[0].get('geometry').get('location')))
+    save_coordinates(coordinates)
   return coordinates
+
+
+def load_coordinates():
+  """Attempt to load the pickled town data.
+
+  Returns:
+    Either a list of town named tuples or an empty list.
+  """
+  try:
+    with open(COORDINATES_FILENAME, 'rb') as fp:
+      return pickle.load(fp)
+  except FileNotFoundError:
+    return []
+
+
+def save_coordinates(coordinates):
+  """Write the pickled town data to a file."""
+  with open(COORDINATES_FILENAME, 'wb') as fp:
+    pickle.dump(coordinates, fp)
 
 
 def haversine(point_1, point_2):
@@ -92,7 +128,7 @@ def haversine(point_1, point_2):
   return km
 
 
-def generate_distance_matrix(cooridantes):
+def generate_distance_matrix(coordinates):
   matrix = []
   for index_1, point_1 in enumerate(coordinates):
     row = []
