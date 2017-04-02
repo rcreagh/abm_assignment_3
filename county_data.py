@@ -2,6 +2,10 @@
 """Script for fetching the coordinates of the listed towns. From these
 coordinates the distance matrix can then be calculated."""
 
+from mpl_toolkits.basemap import Basemap
+import matplotlib.pyplot as plt
+import numpy as np
+
 import time
 import pickle
 import math
@@ -70,6 +74,7 @@ def get_coordinate_data():
   in the future.
   """
   coordinates = load_coordinates()
+  print(len(coordinates))
   if len(coordinates) == 0:
     # We have no coordinates
     for town in COUNTY_TOWNS:
@@ -151,10 +156,51 @@ def populate_dat_file(coordinates, dist_matrix):
       'DIST_MATRIX': string_mat,
       'N_COUNTIES': n_counties}
 
+def get_bounds(coordinates):
+  lat_lower = min([point.lat for point in coordinates]) * 0.99
+  lat_upper = max([point.lat for point in coordinates]) * 1.01
+
+  lng_lower = min([point.lng for point in coordinates]) * 1.1
+  lng_upper = max([point.lng for point in coordinates]) * 0.9
+
+  return (lat_lower, lat_upper, lng_lower, lng_upper)
+
+
+def plot_map(coordinates):
+  """Plot on map.
+
+  Inspired by the example at:
+  https://peak5390.wordpress.com/2012/12/08/matplotlib-basemap-tutorial-plotting-points-on-a-simple-map/
+  """
+  lat_lower, lat_upper, lng_lower, lng_upper = get_bounds(coordinates)
+  lat_0 = (lat_lower + lat_upper)/2
+  lng_0 = (lng_lower + lng_upper)/2
+  map = Basemap(projection='merc', lat_0 = lat_0, lon_0 = lng_0,
+                resolution = 'h', area_thresh = 0.1,
+                llcrnrlon=lng_lower, llcrnrlat=lat_lower,
+                urcrnrlon=lng_upper, urcrnrlat=lat_upper)
+
+  map.drawcoastlines()
+  map.drawcountries()
+  map.fillcontinents(color = 'orange')
+  map.drawmapboundary()
+
+  lons = [point.lng for point in coordinates]
+  lats = [point.lat for point in coordinates]
+  x,y = map(lons, lats)
+  map.plot(x, y, 'bo', markersize=12)
+
+  #TODO(max): Fix labelling.
+  for point in coordinates:
+    plt.text(point.lng, point.lat, point.town)
+
+  plt.show()
+
 
 if __name__ == "__main__":
   coordinates = get_coordinate_data()
+  print(coordinates)
   dist_matrix = generate_distance_matrix(coordinates)
   # Simply printing output. Use UNIX > to pipe output into a file.
   print(populate_dat_file(coordinates, dist_matrix))
-
+  plot_map(coordinates)
