@@ -55,7 +55,7 @@ DAT_FILE_TEMPLATE = """
 ! data rigged to demonstrate violated sub-tour
 
 N_COUNTIES: %(N_COUNTIES)s
-TOWN_NAMES: [%(TOWN_NAMES)s];
+TOWN_NAMES: [%(TOWN_NAMES)s]
 DIST_MATRIX: [
 %(DIST_MATRIX)s];
 """

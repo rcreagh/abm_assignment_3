@@ -22,17 +22,17 @@ model "All Ireland tour planning"
  forward procedure print_sol
 
  declarations
-  N_COUNTIES = 5
+  N_COUNTIES = 33
   COUNTIES = 1..N_COUNTIES ! County Indicies
 
-  DIST_MATRIX : array(COUNTIES, COUNTIES) of integer ! Distance between counties
+  DIST_MATRIX : array(COUNTIES, COUNTIES) of real ! Distance between counties
   NEXT_COUNTY : array(COUNTIES) of integer ! Next county after i in the solution
 
   fly : array(COUNTIES, COUNTIES) of mpvar ! 1 if flight from i to j
   total_dist : linctr
  end-declarations
 
- initializations from 'tsp.dat'
+ initializations from 'ireland.dat'
   DIST_MATRIX
  end-initializations
 
