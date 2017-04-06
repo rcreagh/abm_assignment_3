@@ -5,16 +5,16 @@ coordinates the distance matrix can then be calculated."""
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 import numpy as np
-
+import pandas as pd
 import time
 import pickle
 import math
-from  urllib import request
+import  urllib
 import json
 from collections import namedtuple
 
 # Keep sorted.
-COUNTY_TOWNS = [
+DEFAUL_COUNTY_TOWNS = [
   "Armagh",
   "Ballymena",
   "Carlow",
@@ -64,51 +64,65 @@ URL_TOWN_TEMPLATE = (
 
 TownCoordinates = namedtuple('TownCoordinates', ['town', 'lat', 'lng'])
 
-COORDINATES_FILENAME = 'coordinates.pickle'
+COORDINATES_FILENAME = 'coordinates%d.pickle'
 
-def get_coordinate_data():
+def get_coordinate_data(specific_towns=None):
   """Fetch the coordinate data.
 
   Retrieves pickled data if available. If not queries Google Maps API. In the
   latter case it also saves it as a pickle to prevent the need to query the API
   in the future.
   """
-  coordinates = load_coordinates()
-  print(len(coordinates))
-  if len(coordinates) == 0:
-    # We have no coordinates
-    for town in COUNTY_TOWNS:
-      response = request.urlopen(URL_TOWN_TEMPLATE % town)
+  coordinates = []
+  if specific_towns is None:
+    towns = DEFAULT_COUNTY_TOWNS
+  #  coordinates = load_coordinates()
+  else:
+    towns = specific_towns
+  for i, town in enumerate(towns):
+    print("Fetching %s: %f complete" % (town, i/len(towns)))
+    cleaned_town_name = '+'.join([
+      urllib.parse.quote(part) for part in town.split(', ')])
+    print(cleaned_town_name)
+    url = URL_TOWN_TEMPLATE % cleaned_town_name
+    response = urllib.request.urlopen(url)
+    data = json.loads(response.read().decode('utf-8'))
+    if data['status'] == 'ZERO_RESULTS':
+      # Move along, nothing to see here.
+      continue
+    while data['status'] != 'OK':
+      # In case of throttling. API has a 50 query per second limit.
+      print("Error status: %s" % data['status'])
+      print(data)
+      time.sleep(np.random.exponential(2))
+      response = urllib.request.urlopen(url)
       data = json.loads(response.read().decode('utf-8'))
-      while data['status'] != 'OK':
-        # In case of throttling. API has a 50 query per second limit.
-        time.sleep(10)
-        response = request.urlopen(URL_TOWN_TEMPLATE % town)
-        data = json.loads(response.read().decode('utf-8'))
-      results = data.get('results')
-      coordinates.append(TownCoordinates(
-        town, **results[0].get('geometry').get('location')))
-    save_coordinates(coordinates)
+    results = data.get('results')
+    coordinates.append(TownCoordinates(
+      town, **results[0].get('geometry').get('location')))
+  save_coordinates(coordinates, len(coordinates))
   return coordinates
 
 
-def load_coordinates():
+def load_coordinates(n_towns):
   """Attempt to load the pickled town data.
 
   Returns:
     Either a list of town named tuples or an empty list.
   """
   try:
-    with open(COORDINATES_FILENAME, 'rb') as fp:
+    with open(COORDINATES_FILENAME % n_towns, 'rb') as fp:
       return pickle.load(fp)
   except FileNotFoundError:
     return []
 
 
-def save_coordinates(coordinates):
+def save_coordinates(coordinates, n_towns):
   """Write the pickled town data to a file."""
-  with open(COORDINATES_FILENAME, 'wb') as fp:
+  with open(COORDINATES_FILENAME % n_towns, 'wb') as fp:
     pickle.dump(coordinates, fp)
+
+
 
 
 def haversine(point_1, point_2):
@@ -138,8 +152,8 @@ def generate_distance_matrix(coordinates):
   for index_1, point_1 in enumerate(coordinates):
     row = []
     for index_2, point_2 in enumerate(coordinates):
-      # Rounding to 2 decimal places.
-      dist = round(haversine(point_1, point_2), 2)
+      # Rounding to limit decimal places.
+      dist = round(haversine(point_1, point_2), 4)
       row.append(dist)
     matrix.append(row)
   return(matrix)
@@ -152,7 +166,7 @@ def populate_dat_file(coordinates, dist_matrix):
     fixed_row = ' '.join(str(elem) for elem in row)
     string_mat = string_mat + fixed_row + '\n'
   return DAT_FILE_TEMPLATE % {
-      'TOWN_NAMES': ' '.join(['"%s"' % town for town in COUNTY_TOWNS]),
+      'TOWN_NAMES': ' '.join(['"%s"' % coordinate.town for coordinate in coordinates]),
       'DIST_MATRIX': string_mat,
       'N_COUNTIES': n_counties}
 
@@ -188,19 +202,25 @@ def plot_map(coordinates):
   lons = [point.lng for point in coordinates]
   lats = [point.lat for point in coordinates]
   x,y = map(lons, lats)
-  map.plot(x, y, 'bo', markersize=12)
+  map.plot(x, y, 'bo', markersize=10)
 
   #TODO(max): Fix labelling.
-  for point in coordinates:
-    plt.text(point.lng, point.lat, point.town)
+  #for point in coordinates:
+  #  plt.text(point.lng, point.lat, point.town)
 
   plt.show()
 
 
 if __name__ == "__main__":
-  coordinates = get_coordinate_data()
-  print(coordinates)
-  dist_matrix = generate_distance_matrix(coordinates)
+  #coordinates = get_coordinate_data()
+  #print(coordinates)
   # Simply printing output. Use UNIX > to pipe output into a file.
+  #plot_map(coordinates)
+  #data = pd.read_csv('towns_extended.csv')
+  #towns_extended = [town for town in data["Town"]]
+  #coordinates = get_coordinate_data(690towns_extended)
+  coordinates = load_coordinates(690)
+  dist_matrix = generate_distance_matrix(coordinates)
   print(populate_dat_file(coordinates, dist_matrix))
   plot_map(coordinates)
+
