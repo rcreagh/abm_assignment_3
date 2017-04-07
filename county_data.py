@@ -13,8 +13,12 @@ import  urllib
 import json
 from collections import namedtuple
 
+DEFAULT_COUNTY_SOLUTION = [
+    1,20,11,23,29,10,33,22,21,31,26,3,16,32,12,8,30,13,18,24,15,5,28,4,27,
+    19,6,14,25,17,7,2,9 ]
+
 # Keep sorted.
-DEFAUL_COUNTY_TOWNS = [
+DEFAULT_COUNTY_TOWNS = [
   "Armagh",
   "Ballymena",
   "Carlow",
@@ -76,7 +80,9 @@ def get_coordinate_data(specific_towns=None):
   coordinates = []
   if specific_towns is None:
     towns = DEFAULT_COUNTY_TOWNS
-  #  coordinates = load_coordinates()
+    coordinates = load_coordinates(len(towns))
+    if coordinates:
+      return coordinates
   else:
     towns = specific_towns
   for i, town in enumerate(towns):
@@ -180,12 +186,17 @@ def get_bounds(coordinates):
   return (lat_lower, lat_upper, lng_lower, lng_upper)
 
 
-def plot_map(coordinates):
+def plot_map(coordinates, solution):
   """Plot on map.
 
   Inspired by the example at:
   https://peak5390.wordpress.com/2012/12/08/matplotlib-basemap-tutorial-plotting-points-on-a-simple-map/
   """
+  if solution:
+    coordinates = [coordinates[i] for i in solution]
+
+  plt.figure(facecolor="white")
+
   lat_lower, lat_upper, lng_lower, lng_upper = get_bounds(coordinates)
   lat_0 = (lat_lower + lat_upper)/2
   lng_0 = (lng_lower + lng_upper)/2
@@ -201,26 +212,44 @@ def plot_map(coordinates):
 
   lons = [point.lng for point in coordinates]
   lats = [point.lat for point in coordinates]
+  towns = [point.town for point in coordinates]
   x,y = map(lons, lats)
   map.plot(x, y, 'bo', markersize=10)
 
-  #TODO(max): Fix labelling.
-  #for point in coordinates:
-  #  plt.text(point.lng, point.lat, point.town)
+  for town, xpt, ypt in zip(towns, x, y):
+    plt.text(xpt, ypt, town, fontsize=30)
+
+  if solution:
+    plt.title("TSP Solution", fontsize=50)
+    map.plot(x + [x[0]], y + [y[0]], 'D-', markersize=10,
+             linewidth=2, color='k', markerfacecolor='b')
 
   plt.show()
 
 
+EXTENDED = True
+# The n biggest towns in Ireland by population.
+N_TOWNS = 50
+
+
 if __name__ == "__main__":
-  #coordinates = get_coordinate_data()
-  #print(coordinates)
-  # Simply printing output. Use UNIX > to pipe output into a file.
-  #plot_map(coordinates)
-  #data = pd.read_csv('towns_extended.csv')
-  #towns_extended = [town for town in data["Town"]]
-  #coordinates = get_coordinate_data(690towns_extended)
-  coordinates = load_coordinates(690)
+  solution = None
+  if EXTENDED:
+    data = pd.read_csv('towns_extended.csv')
+    towns_extended = [town for town in data["Town"]]
+    coordinates = load_coordinates(737)
+    if not coordinates:
+      coordinates = get_coordinate_data(towns_extended)
+    if N_TOWNS is not None:
+      coordinates = coordinates[-N_TOWNS:]
+  else:
+    coordinates = get_coordinate_data()
+    # Accounting for Mosel index from 1 versus Python index from 0
+    solution = [i-1 for i in DEFAULT_COUNTY_SOLUTION]
+    print ([DEFAULT_COUNTY_TOWNS[i] for i in solution])
+
+    # Simply printing output. Use UNIX > to pipe output into a file.
   dist_matrix = generate_distance_matrix(coordinates)
   print(populate_dat_file(coordinates, dist_matrix))
-  plot_map(coordinates)
+  #plot_map(coordinates, solution)
 
