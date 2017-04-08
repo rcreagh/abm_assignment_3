@@ -45,7 +45,10 @@ model "All Ireland tour planning"
   TOWN_NAMES: array(COUNTIES) of string ! Array of town names.
   FLY : array(COUNTIES, COUNTIES) of mpvar ! 1 if flight from i to j.
   TOTAL_DIST : linctr ! Total distance of TSP solution.
- end-declarations
+  SUBTOURS_ELIMINATED: integer
+end-declarations
+  
+  SUBTOURS_ELIMINATED:= 0
 
  ! Main initializations section
  initializations from FILENAME
@@ -73,7 +76,7 @@ model "All Ireland tour planning"
   end-procedure
 
  ! Procedure to print the solution.
- procedure print_sol
+procedure print_sol
   writeln("Total distance: ", getobjval, " km") ! Print total distance
   ALL_COUNTIES := {}
   forall(i in COUNTIES) do
@@ -101,7 +104,8 @@ model "All Ireland tour planning"
 
   ! Print the current solution
   print_sol
-
+  SUBTOURS_ELIMINATED := SUBTOURS_ELIMINATED + 1 ! Add 1 to subtour count.
+ 
   ! Get (sub)tour containing county 1
   TOUR := {}
   first := 1
@@ -167,5 +171,7 @@ model "All Ireland tour planning"
 
  ! Print status
  print_status
+
+ writeln("Number of Subtours eliminated: ", SUBTOURS_ELIMINATED)
 
 end-model
