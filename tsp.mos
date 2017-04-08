@@ -1,5 +1,5 @@
 (!*******************************************************************
-  * Assignment 3                                                    *
+  * Asssignment 3                                                   *
   * ======================                                          *
   *                                                                 *
   * file tsp.mos                                                    *
@@ -77,11 +77,11 @@ model "All Ireland tour planning"
   ALL_COUNTIES := {}
   forall(i in COUNTIES) do
    if(i not in ALL_COUNTIES) then
-    write(i)
+    write(TOWN_NAMES(i))
     first := i
     repeat
      ALL_COUNTIES += {first}
-     write(" - ", NEXT_COUNTY(first))
+     write(" - ", TOWN_NAMES(NEXT_COUNTY(first)))
      first := NEXT_COUNTY(first)
     until first = i
     writeln
