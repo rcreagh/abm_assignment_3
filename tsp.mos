@@ -43,8 +43,8 @@ model "All Ireland tour planning"
   NEXT_COUNTY : array(COUNTIES) of integer ! Next county in the solution.
   ALL_COUNTIES: set of integer ! Set to check if county has been visited.
   TOWN_NAMES: array(COUNTIES) of string ! Array of town names.
-  fly : array(COUNTIES, COUNTIES) of mpvar ! 1 if flight from i to j.
-  total_dist : linctr ! Total distance of TSP solution.
+  FLY : array(COUNTIES, COUNTIES) of mpvar ! 1 if flight from i to j.
+  TOTAL_DIST : linctr ! Total distance of TSP solution.
  end-declarations
 
  ! Main initializations section
@@ -97,7 +97,7 @@ model "All Ireland tour planning"
   end-declarations
 
   forall(i in COUNTIES)
-   NEXT_COUNTY(i) := integer(round(getsol(sum(j in COUNTIES) j * fly(i, j))))
+   NEXT_COUNTY(i) := integer(round(getsol(sum(j in COUNTIES) j * FLY(i, j))))
 
   ! Print the current solution
   print_sol
@@ -137,10 +137,10 @@ model "All Ireland tour planning"
    end-if
 
   ! Add a subtour breaking constraint
-  sum(i in SMALLEST) fly(i, NEXT_COUNTY(i)) <= getsize(SMALLEST) - 1
+  sum(i in SMALLEST) FLY(i, NEXT_COUNTY(i)) <= getsize(SMALLEST) - 1
 
    ! Re-solve the problem
-   minimize(total_dist)
+   minimize(TOTAL_DIST)
 
    break_subtour
   end-if
@@ -151,16 +151,16 @@ model "All Ireland tour planning"
  forall(i, j in COUNTIES | i < j) DIST_MATRIX(j, i) := DIST_MATRIX(i, j)
 
  ! Objective: total distance
- total_dist := sum(i, j in COUNTIES | i <> j) DIST_MATRIX(i, j) * fly(i, j)
+ TOTAL_DIST := sum(i, j in COUNTIES | i <> j) DIST_MATRIX(i, j) * FLY(i, j)
 
  ! Visit every county once
- forall(i in COUNTIES) OneVisitI(i) := sum(j in COUNTIES | i <> j) fly(i, j) = 1
- forall(j in COUNTIES) OneVisitJ(j) := sum(i in COUNTIES | i <> j) fly(i, j) = 1
+ forall(i in COUNTIES) OneVisitI(i) := sum(j in COUNTIES | i <> j) FLY(i, j) = 1
+ forall(j in COUNTIES) OneVisitJ(j) := sum(i in COUNTIES | i <> j) FLY(i, j) = 1
 
- forall(i, j in COUNTIES | i <> j) fly(i, j) is_binary
+ forall(i, j in COUNTIES | i <> j) FLY(i, j) is_binary
 
  ! Solve the problem
- minimize(total_dist)
+ minimize(TOTAL_DIST)
 
  ! Eliminate subtours
  break_subtour
