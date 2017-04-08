@@ -30,7 +30,7 @@ model "All Ireland tour planning"
   N_COUNTIES: integer ! Number of counties.
  end-declarations
 
- FILENAME := 'ireland_33.dat' ! This is our data file name.
+ FILENAME := 'ireland_50.dat' ! This is our data file name.
 
  initializations from FILENAME
   N_COUNTIES
