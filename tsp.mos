@@ -10,9 +10,11 @@
   * Authors: Robert Creagh, Max Buckley                             *
   * Student Numbers: 15200115, 15203431                             *
   *                                                                 *
-  * Code reused and edited from gamesworld.org, link:               *
+  * Subtour elimination code based on gamesworld.org, link:         *
   * http://www.gamsworld.org/performance/xpresslib/raw/ive/tsp.mos  *
-  *								                                                  *
+  *								    *
+  * print status procedure reused from                              *
+  * potter_goal_preempt.mos by P.Carroll.                           *
   *******************************************************************!)
 
 model "All Ireland tour planning"
@@ -20,29 +22,57 @@ model "All Ireland tour planning"
 
  forward procedure break_subtour
  forward procedure print_sol
+ forward procedure print_status
 
  declarations
-  N_COUNTIES = 33
-  COUNTIES = 1..N_COUNTIES ! County Indicies
+  ! Need to declare and initalize N_COUNTIES first so as to be able to initalize
+  ! variable length arrays below.
+  N_COUNTIES: integer
+ end-declarations
 
+ FILENAME := 'ireland_33.dat' ! This is our data file name.
+
+ initializations from FILENAME
+  N_COUNTIES
+ end-initializations
+
+ ! Main declarations section
+ declarations
+  COUNTIES = 1..N_COUNTIES ! County Indicies
   DIST_MATRIX : array(COUNTIES, COUNTIES) of real ! Distance between counties
   NEXT_COUNTY : array(COUNTIES) of integer ! Next county after i in the solution
-
+  ALL_COUNTIES: set of integer
+  TOWN_NAMES: array(COUNTIES) of string ! Array of town names.
   fly : array(COUNTIES, COUNTIES) of mpvar ! 1 if flight from i to j
   total_dist : linctr
  end-declarations
 
- initializations from 'ireland.dat'
+ ! Main initializations section
+ initializations from FILENAME
   DIST_MATRIX
+  TOWN_NAMES
  end-initializations
 
  ! Procedures
 
- procedure print_sol
-  declarations
-   ALL_COUNTIES: set of integer
-  end-declarations
+ ! Procedure to check problem status
+ ! Procedure copied from potter_goal_preempt.mos by P. Carroll
+  procedure print_status
+    declarations
+    status: string
+    end-declarations
+    case getprobstat of
+    XPRS_OPT: status:="LP Optimum found"
+    XPRS_UNF: status:="Unfinished"
+    XPRS_INF: status:="Infeasible"
+    XPRS_UNB: status:="Unbounded"
+    XPRS_OTH: status:="Failed"
+    else status:="???"
+    end-case
+    writeln("Problem status: ", status)
+  end-procedure
 
+ procedure print_sol
   writeln("Total distance: ", getobjval)
   ALL_COUNTIES := {}
   forall(i in COUNTIES) do
@@ -130,8 +160,10 @@ model "All Ireland tour planning"
  ! Solve the problem
  minimize(total_dist)
 
- writeln(DIST_MATRIX)
  ! Eliminate subtours
  break_subtour
+
+ ! Print status
+ print_status
 
 end-model
