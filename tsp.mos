@@ -81,11 +81,11 @@ procedure print_sol
   ALL_COUNTIES := {}
   forall(i in COUNTIES) do
    if(i not in ALL_COUNTIES) then
-    write(TOWN_NAMES(i)) ! Write initial town name.
+    write(i) ! Write initial town name.
     first := i
     repeat
      ALL_COUNTIES += {first}
-     write(" - ", TOWN_NAMES(NEXT_COUNTY(first))) ! Write next town name.
+     write(" - ", NEXT_COUNTY(first)) ! Write next town name.
      first := NEXT_COUNTY(first)
     until first = i
     writeln
@@ -150,6 +150,22 @@ procedure print_sol
   end-if
  end-procedure
 
+ ! Procedure to Print final solution town names
+  procedure print_final_solution
+  ALL_COUNTIES := {}
+  forall(i in COUNTIES) do
+   if(i not in ALL_COUNTIES) then
+    write(TOWN_NAMES(i)) ! Write initial town name.
+    first := i
+    repeat
+     ALL_COUNTIES += {first}
+     write(" -> ", TOWN_NAMES(NEXT_COUNTY(first))) ! Write next town name.
+     first := NEXT_COUNTY(first)
+    until first = i
+    writeln
+   end-if
+  end-do 
+ end-procedure
 ! End procedures
 
  forall(i, j in COUNTIES | i < j) DIST_MATRIX(j, i) := DIST_MATRIX(i, j)
@@ -171,6 +187,9 @@ procedure print_sol
 
  ! Print status
  print_status
+
+ ! Print final soluation
+ print_final_solution
 
  writeln("Number of Subtours eliminated: ", SUBTOURS_ELIMINATED)
 
