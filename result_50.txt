@@ -1,0 +1,9 @@
+Total distance: 1561.3 km
+1 - 44 - 7 - 36 - 42 - 34 - 21 - 43 - 27 - 49 - 37 - 31 - 8 - 46 - 15 - 9 - 26 - 10 - 25 - 5 - 45 - 30 - 47 - 29 - 32 - 48 - 4 - 19 - 41 - 20 - 28 - 23 - 2 - 17 - 16 - 24 - 14 - 18 - 22 - 6 - 38 - 50 - 11 - 33 - 39 - 40 - 35 - 13 - 12 - 3 - 1
+Problem status: LP Optimum found
+Cookstown, Tyrone -> Lisburn, Antrim Down -> Holywood, North Down -> Newtownards, Down -> Bangor, North Down -> Carrickfergus, Antrim -> Larne, Antrim -> Newtownabbey, Antrim -> Antrim -> Belfast, Antrim Down -> Ballymena Ballymenantrim -> Coleraine, Londonderry -> Limavady, Londonderry -> Derry, Londonderry -> Letterkenny Town, Donegal -> Strabane, Tyrone -> Omagh, Tyrone -> Enniskillen, Fermanagh -> Sligo Borough, Sligo -> Castlebar Town, Mayo -> Galway City, Galway -> Ennis Town, Clare -> Limerick City, Limerick -> Tralee Town, Kerry -> Killarney Town, Kerry -> Cork City, Cork -> Carrigaline, Cork -> Clonmel Borough, Tipperary South -> Waterford City, Waterford -> Wexford Borough, Wexford -> Kilkenny Borough, Kilkenny -> Carlow Town, Carlow -> Tullamore Town, Offaly -> Athlone Town, Westmeath -> Mullingar, Westmeath -> Navan (An Uaimh) Town, Meath -> Leixlip, Kildare -> Celbridge, Kildare -> Naas Town, Kildare -> Greystones, Wicklow -> Bray, Wicklow -> Dublin, Dublin -> Malahide, Fingal -> Swords, Fingal -> Drogheda Borough, Louth -> Dundalk Town, Louth -> Newry Newry and Mourne, Armagh Down -> Banbridge, Down -> Armagh -> Dungannon, Tyrone -> Cookstown, Tyrone
+Number of Subtours eliminated: 195
+
+real	6m1.731s
+user	14m51.358s
+sys	0m32.968s
