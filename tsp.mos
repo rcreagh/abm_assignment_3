@@ -27,7 +27,7 @@ model "All Ireland tour planning"
  declarations
   ! Need to declare and initalize N_COUNTIES first so as to be able to initalize
   ! variable length arrays below.
-  N_COUNTIES: integer
+  N_COUNTIES: integer ! Number of counties.
  end-declarations
 
  FILENAME := 'ireland_33.dat' ! This is our data file name.
@@ -38,25 +38,25 @@ model "All Ireland tour planning"
 
  ! Main declarations section
  declarations
-  COUNTIES = 1..N_COUNTIES ! County Indicies
-  DIST_MATRIX : array(COUNTIES, COUNTIES) of real ! Distance between counties
-  NEXT_COUNTY : array(COUNTIES) of integer ! Next county after i in the solution
-  ALL_COUNTIES: set of integer
+  COUNTIES = 1..N_COUNTIES ! County Indicies.
+  DIST_MATRIX : array(COUNTIES, COUNTIES) of real ! Distance between counties.
+  NEXT_COUNTY : array(COUNTIES) of integer ! Next county in the solution.
+  ALL_COUNTIES: set of integer ! Set to check if county has been visited.
   TOWN_NAMES: array(COUNTIES) of string ! Array of town names.
-  fly : array(COUNTIES, COUNTIES) of mpvar ! 1 if flight from i to j
-  total_dist : linctr
+  fly : array(COUNTIES, COUNTIES) of mpvar ! 1 if flight from i to j.
+  total_dist : linctr ! Total distance of TSP solution.
  end-declarations
 
  ! Main initializations section
  initializations from FILENAME
-  DIST_MATRIX
-  TOWN_NAMES
+  DIST_MATRIX ! Matrix of distances between towns.
+  TOWN_NAMES ! Names of towns.
  end-initializations
 
  ! Procedures
 
- ! Procedure to check problem status
- ! Procedure copied from potter_goal_preempt.mos by P. Carroll
+ ! Procedure to check problem status.
+ ! Procedure copied from potter_goal_preempt.mos by P. Carroll.
   procedure print_status
     declarations
     status: string
@@ -72,16 +72,17 @@ model "All Ireland tour planning"
     writeln("Problem status: ", status)
   end-procedure
 
+ ! Procedure to print the solution.
  procedure print_sol
-  writeln("Total distance: ", getobjval)
+  writeln("Total distance: ", getobjval, " km") ! Print total distance
   ALL_COUNTIES := {}
   forall(i in COUNTIES) do
    if(i not in ALL_COUNTIES) then
-    write(TOWN_NAMES(i))
+    write(TOWN_NAMES(i)) ! Write initial town name.
     first := i
     repeat
      ALL_COUNTIES += {first}
-     write(" - ", TOWN_NAMES(NEXT_COUNTY(first)))
+     write(" - ", TOWN_NAMES(NEXT_COUNTY(first))) ! Write next town name.
      first := NEXT_COUNTY(first)
     until first = i
     writeln
@@ -89,6 +90,7 @@ model "All Ireland tour planning"
   end-do
  end-procedure
 
+ ! Procedure to add constraints when subtours detected.
  procedure break_subtour
   declarations
    TOUR, SMALLEST, ALL_COUNTIES: set of integer
@@ -109,7 +111,7 @@ model "All Ireland tour planning"
   until first = 1
   size := getsize(TOUR)
 
-  ! Find smallest subtour
+  ! Find smallest subtour, in order to add the minimum number of constraints.
   if size < N_COUNTIES then
    SMALLEST := TOUR
    if size > 2 then
