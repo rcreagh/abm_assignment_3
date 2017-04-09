@@ -13,9 +13,11 @@ import  urllib
 import json
 from collections import namedtuple
 
+# Mosel output. Indices over by 1.
 DEFAULT_COUNTY_SOLUTION = [
-    1,20,11,23,29,10,33,22,21,31,26,3,16,32,12,8,30,13,18,24,15,5,28,4,27,
-    19,6,14,25,17,7,2,9 ]
+    1,  20, 11, 23, 29, 10, 33, 22, 21, 31, 26, 3, 16, 32, 12, 8, 30, 13, 18,
+    24, 15, 5, 28, 4, 27, 19, 6, 14, 25, 17, 7, 2, 9
+]
 
 # Keep sorted.
 DEFAULT_COUNTY_TOWNS = [
@@ -63,12 +65,16 @@ TOWN_NAMES: [%(TOWN_NAMES)s]
 DIST_MATRIX: [
 %(DIST_MATRIX)s];
 """
+
+
 URL_TOWN_TEMPLATE = (
   "http://maps.googleapis.com/maps/api/geocode/json?address=%s+Ireland")
 
-TownCoordinates = namedtuple('TownCoordinates', ['town', 'lat', 'lng'])
+TownCoordinates = namedtuple("TownCoordinates", ["town", "lat", "lng"])
 
-COORDINATES_FILENAME = 'coordinates%d.pickle'
+PICKLES_FOLDER = "pickles/"
+
+COORDINATES_FILENAME = PICKLES_FOLDER + "coordinates%d.pickle"
 
 def get_coordinate_data(specific_towns=None):
   """Fetch the coordinate data.
@@ -87,25 +93,25 @@ def get_coordinate_data(specific_towns=None):
     towns = specific_towns
   for i, town in enumerate(towns):
     print("Fetching %s: %f complete" % (town, i/len(towns)))
-    cleaned_town_name = '+'.join([
-      urllib.parse.quote(part) for part in town.split(', ')])
+    cleaned_town_name = "+".join([
+      urllib.parse.quote(part) for part in town.split(", ")])
     print(cleaned_town_name)
     url = URL_TOWN_TEMPLATE % cleaned_town_name
     response = urllib.request.urlopen(url)
-    data = json.loads(response.read().decode('utf-8'))
-    if data['status'] == 'ZERO_RESULTS':
+    data = json.loads(response.read().decode("utf-8"))
+    if data["status"] == "ZERO_RESULTS":
       # Move along, nothing to see here.
       continue
-    while data['status'] != 'OK':
+    while data["status"] != "OK":
       # In case of throttling. API has a 50 query per second limit.
-      print("Error status: %s" % data['status'])
+      print("Error status: %s" % data["status"])
       print(data)
       time.sleep(np.random.exponential(2))
       response = urllib.request.urlopen(url)
-      data = json.loads(response.read().decode('utf-8'))
-    results = data.get('results')
+      data = json.loads(response.read().decode("utf-8"))
+    results = data.get("results")
     coordinates.append(TownCoordinates(
-      town, **results[0].get('geometry').get('location')))
+      town, **results[0].get("geometry").get("location")))
   save_coordinates(coordinates, len(coordinates))
   return coordinates
 
@@ -117,7 +123,7 @@ def load_coordinates(n_towns):
     Either a list of town named tuples or an empty list.
   """
   try:
-    with open(COORDINATES_FILENAME % n_towns, 'rb') as fp:
+    with open(COORDINATES_FILENAME % n_towns, "rb") as fp:
       return pickle.load(fp)
   except FileNotFoundError:
     return []
@@ -125,7 +131,7 @@ def load_coordinates(n_towns):
 
 def save_coordinates(coordinates, n_towns):
   """Write the pickled town data to a file."""
-  with open(COORDINATES_FILENAME % n_towns, 'wb') as fp:
+  with open(COORDINATES_FILENAME % n_towns, "wb") as fp:
     pickle.dump(coordinates, fp)
 
 
@@ -167,14 +173,15 @@ def generate_distance_matrix(coordinates):
 
 def populate_dat_file(coordinates, dist_matrix):
   n_counties = len(coordinates)
-  string_mat = ''
+  string_mat = ""
   for row in dist_matrix:
-    fixed_row = ' '.join(str(elem) for elem in row)
-    string_mat = string_mat + fixed_row + '\n'
+    fixed_row = " ".join(str(elem) for elem in row)
+    string_mat = string_mat + fixed_row + "\n"
   return DAT_FILE_TEMPLATE % {
-      'TOWN_NAMES': ' '.join(['"%s"' % coordinate.town for coordinate in coordinates]),
-      'DIST_MATRIX': string_mat,
-      'N_COUNTIES': n_counties}
+      "TOWN_NAMES": " ".join(["'%s'" % coordinate.town for coordinate in
+                              coordinates]),
+      "DIST_MATRIX": string_mat,
+      "N_COUNTIES": n_counties}
 
 def get_bounds(coordinates):
   lat_lower = min([point.lat for point in coordinates]) * 0.99
@@ -200,42 +207,42 @@ def plot_map(coordinates, solution):
   lat_lower, lat_upper, lng_lower, lng_upper = get_bounds(coordinates)
   lat_0 = (lat_lower + lat_upper)/2
   lng_0 = (lng_lower + lng_upper)/2
-  map = Basemap(projection='merc', lat_0 = lat_0, lon_0 = lng_0,
-                resolution = 'h', area_thresh = 0.1,
+  map = Basemap(projection="merc", lat_0 = lat_0, lon_0 = lng_0,
+                resolution = "h", area_thresh = 0.1,
                 llcrnrlon=lng_lower, llcrnrlat=lat_lower,
                 urcrnrlon=lng_upper, urcrnrlat=lat_upper)
 
   map.drawcoastlines()
   map.drawcountries()
-  map.fillcontinents(color = 'orange')
+  map.fillcontinents(color = "orange")
   map.drawmapboundary()
 
   lons = [point.lng for point in coordinates]
   lats = [point.lat for point in coordinates]
   towns = [point.town for point in coordinates]
   x,y = map(lons, lats)
-  map.plot(x, y, 'bo', markersize=10)
+  map.plot(x, y, "bo", markersize=10)
 
   for town, xpt, ypt in zip(towns, x, y):
     plt.text(xpt, ypt, town, fontsize=30)
 
   if solution:
     plt.title("TSP Solution", fontsize=50)
-    map.plot(x + [x[0]], y + [y[0]], 'D-', markersize=10,
-             linewidth=2, color='k', markerfacecolor='b')
+    map.plot(x + [x[0]], y + [y[0]], "D-", markersize=10,
+             linewidth=2, color="k", markerfacecolor="b")
 
   plt.show()
 
 
 EXTENDED = True
 # The n biggest towns in Ireland by population.
-N_TOWNS = 50
+N_TOWNS = 70
 
 
 if __name__ == "__main__":
   solution = None
   if EXTENDED:
-    data = pd.read_csv('towns_extended.csv')
+    data = pd.read_csv("towns_extended.csv")
     towns_extended = [town for town in data["Town"]]
     coordinates = load_coordinates(737)
     if not coordinates:
