@@ -236,7 +236,7 @@ def plot_map(coordinates, solution):
 
 EXTENDED = True
 # The n biggest towns in Ireland by population.
-N_TOWNS = 70
+N_TOWNS = 90
 
 
 if __name__ == "__main__":
