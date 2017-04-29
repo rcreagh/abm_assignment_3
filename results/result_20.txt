@@ -1,0 +1,9 @@
+Total distance: 1007.89 km
+
+1 - 16 - 15 - 17 - 2 - 18 - 11 - 8 - 20 - 3 - 9 - 10 - 5 - 14 - 6 - 12 - 4 - 13 - 19 - 7 - 1
+
+Problem status: LP Optimum found
+
+Coleraine, Londonderry -> Derry, Londonderry -> Galway City, Galway -> Limerick City, Limerick -> Killarney Town, Kerry -> Cork City, Cork -> Waterford City, Waterford -> Bray, Wicklow -> Dublin, Dublin -> Swords, Fingal -> Drogheda Borough, Louth -> Dundalk Town, Louth -> Newry Newry and Mourne, Armagh Down -> Lisburn, Antrim Down -> Newtownards, Down -> Bangor, North Down -> Carrickfergus, Antrim -> Newtownabbey, Antrim -> Belfast, Antrim Down -> Ballymena Ballymenantrim -> Coleraine, Londonderry
+
+Number of Subtours eliminated: 28

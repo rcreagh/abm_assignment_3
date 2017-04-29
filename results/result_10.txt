@@ -1,0 +1,13 @@
+Total distance: 888.73 km
+
+1 - 10 - 4 - 2 - 3 - 9 - 6 - 5 - 7 - 8 - 1
+
+Problem status: LP Optimum found
+
+Waterford City, Waterford -> Dublin, Dublin -> Lisburn, Antrim Down -> Bangor, North Down -> Newtownabbey, Antrim -> Belfast, Antrim Down -> Derry, Londonderry -> Galway City, Galway -> Limerick City, Limerick -> Cork City, Cork -> Waterford City, Waterford
+
+Number of Subtours eliminated: 10
+
+real	0m0.472s
+user	0m0.112s
+sys	0m0.011s

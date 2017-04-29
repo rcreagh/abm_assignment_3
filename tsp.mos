@@ -30,7 +30,7 @@ model "All Ireland tour planning"
   N_COUNTIES: integer ! Number of counties.
  end-declarations
 
- FILENAME := 'ireland_50.dat' ! This is our data file name.
+ FILENAME := 'data/ireland_33.dat' ! This is our data file name.
 
  initializations from FILENAME
   N_COUNTIES
@@ -77,7 +77,9 @@ end-declarations
 
  ! Procedure to print the solution.
 procedure print_sol
+  writeln
   writeln("Total distance: ", getobjval, " km") ! Print total distance
+  writeln
   ALL_COUNTIES := {}
   forall(i in COUNTIES) do
    if(i not in ALL_COUNTIES) then
@@ -91,6 +93,7 @@ procedure print_sol
     writeln
    end-if
   end-do
+  writeln
  end-procedure
 
  ! Procedure to add constraints when subtours detected.
@@ -164,7 +167,8 @@ procedure print_sol
     until first = i
     writeln
    end-if
-  end-do 
+  end-do
+  writeln 
  end-procedure
 ! End procedures
 
@@ -174,8 +178,8 @@ procedure print_sol
  TOTAL_DIST := sum(i, j in COUNTIES | i <> j) DIST_MATRIX(i, j) * FLY(i, j)
 
  ! Visit every county once
- forall(i in COUNTIES) OneVisitI(i) := sum(j in COUNTIES | i <> j) FLY(i, j) = 1
- forall(j in COUNTIES) OneVisitJ(j) := sum(i in COUNTIES | i <> j) FLY(i, j) = 1
+ forall(i in COUNTIES) ONE_VISIT_I(i) := sum(j in COUNTIES | i <> j) FLY(i, j) = 1
+ forall(j in COUNTIES) ONE_VISIT_J(j) := sum(i in COUNTIES | i <> j) FLY(i, j) = 1
 
  forall(i, j in COUNTIES | i <> j) FLY(i, j) is_binary
 
@@ -187,6 +191,8 @@ procedure print_sol
 
  ! Print status
  print_status
+
+writeln
 
  ! Print final soluation
  print_final_solution

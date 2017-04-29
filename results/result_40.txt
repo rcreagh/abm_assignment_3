@@ -1,0 +1,13 @@
+Total distance: 1421.02 km
+
+1 - 28 - 40 - 4 - 8 - 12 - 13 - 18 - 10 - 31 - 9 - 38 - 22 - 19 - 37 - 20 - 35 - 7 - 6 - 15 - 16 - 5 - 36 - 21 - 27 - 39 - 17 - 33 - 11 - 24 - 32 - 26 - 34 - 3 - 2 - 25 - 30 - 29 - 14 - 23 - 1
+
+Problem status: LP Optimum found
+
+Malahide, Fingal -> Bray, Wicklow -> Dublin, Dublin -> Leixlip, Kildare -> Celbridge, Kildare -> Naas Town, Kildare -> Carlow Town, Carlow -> Kilkenny Borough, Kilkenny -> Wexford Borough, Wexford -> Waterford City, Waterford -> Clonmel Borough, Tipperary South -> Cork City, Cork -> Killarney Town, Kerry -> Tralee Town, Kerry -> Limerick City, Limerick -> Ennis Town, Clare -> Galway City, Galway -> Athlone Town, Westmeath -> Mullingar, Westmeath -> Sligo Borough, Sligo -> Omagh, Tyrone -> Letterkenny Town, Donegal -> Derry, Londonderry -> Coleraine, Londonderry -> Ballymena Ballymenantrim -> Belfast, Antrim Down -> Antrim -> Newtownabbey, Antrim -> Larne, Antrim -> Carrickfergus, Antrim -> Bangor, North Down -> Newtownards, Down -> Lisburn, Antrim Down -> Banbridge, Down -> Armagh -> Newry Newry and Mourne, Armagh Down -> Dundalk Town, Louth -> Drogheda Borough, Louth -> Navan (An Uaimh) Town, Meath -> Swords, Fingal -> Malahide, Fingal
+
+Number of Subtours eliminated: 43
+
+real	0m10.515s
+user	0m7.919s
+sys	0m0.200s
